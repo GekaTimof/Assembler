@@ -21,7 +21,7 @@
         
 %endmacro
 
-; get num from eax
+; get num from rax
 %macro dprint 0
 	pushd
 	mov rbx, 0
@@ -45,7 +45,7 @@
 
 	mov rsi, newline
 	mov rdx, nlen
-	print rsi, rdx
+	;print rsi, rdx
 
 	popd
 %endmacro
@@ -65,7 +65,7 @@ AVG:
 	js .neg
 	jmp .pos
 .neg:
-    	neg ecx
+   	neg ecx
 .pos:
 	add eax, ecx
 	
@@ -77,10 +77,36 @@ AVG:
 	cmp rbx, 0
 	je .error
 
+
 	cdq
 	idiv rbx
 
+	mov rbp, rdx
 	dprint
+
+	; print " left = "
+	mov rsi, left
+	mov rdx, leftlen
+	print rsi, rdx
+	
+	
+	mov rax, rbp		
+	dprint
+	
+	
+	; print " / "
+	mov rsi, line
+	mov rdx, linelen
+	print rsi, rdx
+	
+	mov rax, rbx		
+	dprint
+	
+	
+	mov rsi, newline
+	mov rdx, nlen
+	print rsi, rdx
+	
 
 	mov rax, 60
 	xor rdi, rdi
@@ -103,6 +129,12 @@ section .data
 
 	error db 'Division by zero'
 	errorlen equ $ - error
+	
+	left db '   left = '
+	leftlen equ $ - left
+	
+	line db '/'
+	linelen equ $ - line
 	
 	done db 'Done'
 	len equ $ - done
