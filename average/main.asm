@@ -1,147 +1,106 @@
 %macro pushd 0
-	push rax
-	push rbx
-	push rcx
-	push rdx
+    push rax
+    push rbx
+    push rcx
+    push rdx
 %endmacro
 
 %macro popd 0
-	pop rdx
-        pop rcx
-        pop rbx
-        pop rax
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
 %endmacro
 
 %macro print 2
-	mov rax, 1
-        mov rdi, 1
-        mov rsi, %1
-        mov rdx, %2
-        syscall
-        
+    mov rax, 1                
+    mov rdi, 1                
+    mov rsi, %1               
+    mov rdx, %2               
+    syscall
 %endmacro
 
 ; get num from rax
 %macro dprint 0
-	pushd
-	mov rbx, 0
-	mov rcx, 10
-	%%divide:
-	        xor rdx, rdx
-	        div rcx
-	        push rdx
-	        inc rbx
-	        cmp rax, 0
-	        jne %%divide
+    pushd
+    mov rbx, 0                
+    mov rcx, 10               
 
-	%%digit:
-        	pop rax
-        	add rax, '0'
-		mov [result], rax
-		print result, 1
-		dec rbx
-		cmp rbx, 0
-		jg %%digit
+%%divide:
+    xor rdx, rdx              
+    div rcx                    
+    push rdx                  
+    inc rbx                    
+    cmp rax, 0
+    jne %%divide               
 
-	mov rsi, newline
-	mov rdx, nlen
-	;print rsi, rdx
+%%print_digits:
+    dec rbx                    
+    pop rax                    
+    add rax, '0'               
+    mov [result], al          
+    print result, 1            
+    cmp rbx, 0
+    jg %%print_digits          
 
-	popd
+    
+    mov rsi, newline           
+    mov rdx, nlen             
+    print rsi, rdx            
+
+    popd
 %endmacro
-
 
 section .text
 global _start
 
 _start:
-	xor rax, rax
-	mov rbx, 0
+    xor rax, rax               
+    xor rbx, rbx               
+
 AVG:
-	mov ecx, [array1 + rbx * 4]
-	mov esi, [array2 + rbx * 4]
-	
-	sub ecx, esi
-	js .neg
-	jmp .pos
-.neg:
-   	neg ecx
-.pos:
-	add eax, ecx
-	
-	inc rbx
-
-	cmp rbx, arrlen
-	jne AVG
-
-	cmp rbx, 0
-	je .error
+    mov ecx, [array1 + rbx * 4] 
+    mov edx, [array2 + rbx * 4]  
+    
+    sub ecx, edx               
+    add rax, rcx              
+    
+    dprint
+    
+    inc rbx                     
+    cmp rbx, arrlen             
+    jl AVG                      
 
 
-	cdq
-	idiv rbx
+    mov ecx, arrlen          
+    xor rdx, rdx  
+    
+    test rax, rax
+    jge .positive
+          
+    neg rax
+      
+      
+.positive:          
+    cdq                         
+    idiv ecx  
+    
+                
+    dprint                      
 
-	mov rbp, rdx
-	dprint
-
-	; print " left = "
-	mov rsi, left
-	mov rdx, leftlen
-	print rsi, rdx
-	
-	
-	mov rax, rbp		
-	dprint
-	
-	
-	; print " / "
-	mov rsi, line
-	mov rdx, linelen
-	print rsi, rdx
-	
-	mov rax, rbx		
-	dprint
-	
-	
-	mov rsi, newline
-	mov rdx, nlen
-	print rsi, rdx
-	
-
-	mov rax, 60
-	xor rdi, rdi
-	syscall
-
-
-.error:
-	mov rax, 1
-	mov rdi, 1
-	print error, errorlen
-
-	mov rax, 60
-	xor rdi, rdi
-	syscall
+    mov rax, 60                 
+    xor rdi, rdi                
+    syscall
 
 section .data
-	array1 dd 5, 3, 2, 6, 1, 7, 4
-	array2 dd 0, 10, 1, 9, 2, 8, 5
-	arrlen equ ($ - array1) / 8
+    array1 dd 5, 3, 2, 6, 1, 7, 4 
+    array2 dd 0, 10, 1, 9, 2, 8, 5
+    arrlen equ ($ - array1) / 8
 
-	error db 'Division by zero'
-	errorlen equ $ - error
-	
-	left db '   left = '
-	leftlen equ $ - left
-	
-	line db '/'
-	linelen equ $ - line
-	
-	done db 'Done'
-	len equ $ - done
-	newline db 0xA, 0xD
-	nlen equ $ - newline
-
+    newline db 0xA                
+    nlen equ $ - newline           
 
 section .bss
-	result resb 1
+    result resb 10                
+                   
 
